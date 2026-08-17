@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#12212a" />
+    <title>表格海报工坊</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div>
+            <div class="brand-name">表格海报工坊</div>
+            <div class="brand-subtitle">VISUAL TABLE STUDIO</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="live-status"><span class="live-dot"></span><span>实时预览</span></div>
+          <button class="download-button" type="button" data-action="download">
+            <span class="button-icon" data-icon="download" aria-hidden="true"></span>
+            导出 PNG
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="inspector" aria-label="编辑面板">
+          <div class="inspector-head">
+            <div>
+              <span class="section-kicker">编辑工作台 / 01</span>
+              <h1>配置你的版式</h1>
+            </div>
+            <button class="icon-button" type="button" data-action="reset" title="恢复示例内容" aria-label="恢复示例内容">
+              <span class="button-icon" data-icon="rotate" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="inspector-scroll">
+            <details class="control-section" open>
+              <summary>
+                <span class="summary-number">01</span>
+                <span class="summary-copy"><strong>内容</strong><small>标题与左上角标识</small></span>
+                <span class="summary-chevron button-icon" data-icon="chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="section-body">
+                <label class="field">
+                  <span class="field-label">左上角标识</span>
+                  <input id="badgeText" class="text-input" type="text" value="附件" maxlength="16" aria-label="左上角标识" />
+                </label>
+                <label class="field">
+                  <span class="field-label">主标题</span>
+                  <textarea id="titleText" class="text-input title-input" rows="3" maxlength="80" aria-label="主标题">2026年江苏省先进级智能工厂拟入选公示名单</textarea>
+                </label>
+                <label class="range-field">
+                  <span class="field-label"><span>标题字号</span><output id="titleSizeOutput">48 px</output></span>
+                  <input id="titleSize" type="range" min="30" max="72" value="48" step="1" />
+                </label>
+                <label class="field">
+                  <span class="field-label">标题字体</span>
+                  <select id="titleFont" class="text-input" aria-label="标题字体">
+                    <option value="songti">宋体 / 公示风格</option>
+                    <option value="yahei">微软雅黑 / 现代清晰</option>
+                    <option value="heiti">黑体 / 强调醒目</option>
+                    <option value="kaiti">楷体 / 人文柔和</option>
+                    <option value="fangsong">仿宋 / 正式文书</option>
+                  </select>
+                </label>
+                <div class="position-field">
+                  <div class="field-label"><span>拖拽定位</span><output id="positionTargetOutput">背景图</output></div>
+                  <div class="segmented-control" role="group" aria-label="拖拽定位对象">
+                    <button class="segment-button is-active" type="button" data-action="select-position-target" data-position-target="background" aria-pressed="true">
+                      <span class="button-icon" data-icon="image" aria-hidden="true"></span>背景图
+                    </button>
+                    <button class="segment-button" type="button" data-action="select-position-target" data-position-target="title" aria-pressed="false">
+                      <span class="button-icon" data-icon="type" aria-hidden="true"></span>标题
+                    </button>
+                  </div>
+                  <div class="position-readout">
+                    <span id="positionReadout">横向 50% / 纵向 68%</span>
+                    <button class="icon-button compact" type="button" data-action="reset-position" title="重置当前对象位置" aria-label="重置当前对象位置">
+                      <span class="button-icon" data-icon="crosshair" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="control-section" open>
+              <summary>
+                <span class="summary-number">02</span>
+                <span class="summary-copy"><strong>表格</strong><small id="tableSummary">3 列 · 3 行</small></span>
+                <span class="summary-chevron button-icon" data-icon="chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="section-body table-section-body">
+                <div class="section-toolbar">
+                  <span class="toolbar-label">表格内容</span>
+                  <div class="toolbar-actions">
+                    <button class="small-action" type="button" data-action="add-column">
+                      <span class="button-icon" data-icon="plus" aria-hidden="true"></span>添加列
+                    </button>
+                    <button class="small-action" type="button" data-action="add-row">
+                      <span class="button-icon" data-icon="plus" aria-hidden="true"></span>添加行
+                    </button>
+                  </div>
+                </div>
+                <div id="tableEditor" class="table-editor" aria-label="表格编辑器"></div>
+              </div>
+            </details>
+
+            <details class="control-section" open>
+              <summary>
+                <span class="summary-number">03</span>
+                <span class="summary-copy"><strong>画面</strong><small>颜色与背景图</small></span>
+                <span class="summary-chevron button-icon" data-icon="chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="section-body">
+                <div class="color-grid">
+                  <label class="color-field">
+                    <span class="field-label">表头颜色</span>
+                    <span class="color-control"><input id="headerColor" type="color" value="#0c4ca2" /><output id="headerColorOutput">#0C4CA2</output></span>
+                  </label>
+                  <label class="color-field">
+                    <span class="field-label">强调色</span>
+                    <span class="color-control"><input id="accentColor" type="color" value="#0c4ca2" /><output id="accentColorOutput">#0C4CA2</output></span>
+                  </label>
+                </div>
+                <label class="range-field">
+                  <span class="field-label"><span>背景透明度</span><output id="imageOpacityOutput">42%</output></span>
+                  <input id="imageOpacity" type="range" min="0" max="100" value="42" step="1" />
+                </label>
+                <label class="range-field">
+                  <span class="field-label"><span>图片横向偏移</span><output id="backgroundOffsetXOutput">0 px</output></span>
+                  <input id="backgroundOffsetX" type="range" min="-3000" max="3000" value="0" step="1" />
+                </label>
+                <label class="range-field">
+                  <span class="field-label"><span>图片纵向偏移</span><output id="backgroundOffsetYOutput">0 px</output></span>
+                  <input id="backgroundOffsetY" type="range" min="-3000" max="3000" value="0" step="1" />
+                </label>
+                <label class="range-field">
+                  <span class="field-label"><span>背景缩放</span><output id="backgroundScaleOutput">100%</output></span>
+                  <div class="range-with-number">
+                    <input id="backgroundScale" type="range" min="1" max="2000" value="100" step="1" />
+                    <input id="backgroundScaleNumber" class="number-input" type="number" min="1" max="2000" value="100" step="1" aria-label="背景缩放数值" />
+                  </div>
+                </label>
+                <div class="asset-field">
+                  <div>
+                    <span class="field-label">背景素材</span>
+                    <span id="backgroundName" class="asset-name">factory-aerial.png</span>
+                  </div>
+                  <div class="asset-actions">
+                    <button class="small-action" type="button" data-action="upload-background">
+                      <span class="button-icon" data-icon="upload" aria-hidden="true"></span>替换图片
+                    </button>
+                    <button class="icon-button compact" type="button" data-action="reset-background" title="恢复默认背景" aria-label="恢复默认背景">
+                      <span class="button-icon" data-icon="image" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <input id="backgroundInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                </div>
+              </div>
+            </details>
+
+            <div class="inspector-note">
+              <span class="note-line"></span>
+              <span>16 : 9 / PNG / 1600 × 900</span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="canvas-area" aria-label="画布预览">
+          <div class="canvas-head">
+            <div>
+              <span class="section-kicker">实时画布 / 02</span>
+              <div class="canvas-title-row"><h2>成品预览</h2><span class="canvas-ratio">16:9</span></div>
+            </div>
+            <div class="canvas-head-meta">
+              <span id="canvasStats">3 列 · 3 行</span>
+              <button class="icon-button" type="button" data-action="download" title="导出 PNG" aria-label="导出 PNG">
+                <span class="button-icon" data-icon="download" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <div class="canvas-frame">
+              <canvas id="posterCanvas" width="1600" height="900" aria-label="海报预览"></canvas>
+              <div class="canvas-frame-mark">LIVE / 01</div>
+            </div>
+          </div>
+          <div class="canvas-foot">
+            <div class="canvas-foot-note"><span class="foot-tick"></span><span>所有改动会即时反映在画布中</span></div>
+            <span id="renderStatus">已就绪</span>
+          </div>
+        </section>
+      </main>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
