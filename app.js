@@ -10,15 +10,15 @@
     badgeText: "附件",
     titleText: "2026年江苏省先进级智能工厂拟入选公示名单",
     titleSize: 48,
-    titleFont: "songti",
-    titlePositionX: 800,
-    titlePositionY: 86,
+    titleFont: "yahei",
+    titlePositionX: 816,
+    titlePositionY: 119,
     headerColor: "#0c4ca2",
     accentColor: "#0c4ca2",
-    imageOpacity: 42,
-    backgroundOffsetX: 0,
-    backgroundOffsetY: 0,
-    backgroundScale: 100,
+    imageOpacity: 72,
+    backgroundOffsetX: 8,
+    backgroundOffsetY: 353,
+    backgroundScale: 89,
     positionTarget: "background",
     backgroundSrc: defaultBackground,
     backgroundName: "factory-aerial.png",
@@ -198,8 +198,8 @@
       state.backgroundSrc = src;
       state.backgroundName = name;
       if (resetPlacement) {
-        state.backgroundOffsetX = 0;
-        state.backgroundOffsetY = 0;
+        state.backgroundOffsetX = defaultState.backgroundOffsetX;
+        state.backgroundOffsetY = defaultState.backgroundOffsetY;
         state.backgroundScale = defaultState.backgroundScale;
       }
       updateOutputs();
@@ -604,8 +604,8 @@
         state.titlePositionX = defaultState.titlePositionX;
         state.titlePositionY = defaultState.titlePositionY;
       } else {
-        state.backgroundOffsetX = 0;
-        state.backgroundOffsetY = 0;
+        state.backgroundOffsetX = defaultState.backgroundOffsetX;
+        state.backgroundOffsetY = defaultState.backgroundOffsetY;
       }
       updateOutputs();
       renderPoster();

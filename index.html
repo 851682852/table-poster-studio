@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#12212a" />
-    <title>表格海报工坊</title>
+    <title>通鼎互联-表格海报工坊</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -15,7 +15,7 @@
             <span></span><span></span><span></span><span></span>
           </div>
           <div>
-            <div class="brand-name">表格海报工坊</div>
+            <div class="brand-name">通鼎互联-表格海报工坊</div>
             <div class="brand-subtitle">VISUAL TABLE STUDIO</div>
           </div>
         </div>
@@ -64,7 +64,7 @@
                   <span class="field-label">标题字体</span>
                   <select id="titleFont" class="text-input" aria-label="标题字体">
                     <option value="songti">宋体 / 公示风格</option>
-                    <option value="yahei">微软雅黑 / 现代清晰</option>
+                    <option value="yahei" selected>微软雅黑 / 现代清晰</option>
                     <option value="heiti">黑体 / 强调醒目</option>
                     <option value="kaiti">楷体 / 人文柔和</option>
                     <option value="fangsong">仿宋 / 正式文书</option>
@@ -81,7 +81,7 @@
                     </button>
                   </div>
                   <div class="position-readout">
-                    <span id="positionReadout">横向 50% / 纵向 68%</span>
+                    <span id="positionReadout">偏移 X 8 px / Y 353 px</span>
                     <button class="icon-button compact" type="button" data-action="reset-position" title="重置当前对象位置" aria-label="重置当前对象位置">
                       <span class="button-icon" data-icon="crosshair" aria-hidden="true"></span>
                     </button>
@@ -130,22 +130,22 @@
                   </label>
                 </div>
                 <label class="range-field">
-                  <span class="field-label"><span>背景透明度</span><output id="imageOpacityOutput">42%</output></span>
-                  <input id="imageOpacity" type="range" min="0" max="100" value="42" step="1" />
+                  <span class="field-label"><span>背景透明度</span><output id="imageOpacityOutput">72%</output></span>
+                  <input id="imageOpacity" type="range" min="0" max="100" value="72" step="1" />
                 </label>
                 <label class="range-field">
-                  <span class="field-label"><span>图片横向偏移</span><output id="backgroundOffsetXOutput">0 px</output></span>
-                  <input id="backgroundOffsetX" type="range" min="-3000" max="3000" value="0" step="1" />
+                  <span class="field-label"><span>图片横向偏移</span><output id="backgroundOffsetXOutput">8 px</output></span>
+                  <input id="backgroundOffsetX" type="range" min="-3000" max="3000" value="8" step="1" />
                 </label>
                 <label class="range-field">
-                  <span class="field-label"><span>图片纵向偏移</span><output id="backgroundOffsetYOutput">0 px</output></span>
-                  <input id="backgroundOffsetY" type="range" min="-3000" max="3000" value="0" step="1" />
+                  <span class="field-label"><span>图片纵向偏移</span><output id="backgroundOffsetYOutput">353 px</output></span>
+                  <input id="backgroundOffsetY" type="range" min="-3000" max="3000" value="353" step="1" />
                 </label>
                 <label class="range-field">
-                  <span class="field-label"><span>背景缩放</span><output id="backgroundScaleOutput">100%</output></span>
+                  <span class="field-label"><span>背景缩放</span><output id="backgroundScaleOutput">89%</output></span>
                   <div class="range-with-number">
-                    <input id="backgroundScale" type="range" min="1" max="2000" value="100" step="1" />
-                    <input id="backgroundScaleNumber" class="number-input" type="number" min="1" max="2000" value="100" step="1" aria-label="背景缩放数值" />
+                    <input id="backgroundScale" type="range" min="1" max="2000" value="89" step="1" />
+                    <input id="backgroundScaleNumber" class="number-input" type="number" min="1" max="2000" value="89" step="1" aria-label="背景缩放数值" />
                   </div>
                 </label>
                 <div class="asset-field">
