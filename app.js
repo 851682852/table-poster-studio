@@ -23,6 +23,8 @@
     backgroundSrc: defaultBackground,
     backgroundName: "factory-aerial.png",
     headers: ["序号", "企业名称", "工厂名称"],
+    columnWidths: [14, 43, 43],
+    columnAlignments: ["center", "left", "left"],
     rows: [
       ["638", "通鼎互联信息股份有限公司", "全流程数智集成的光电线缆全产业链智能工厂"],
       ["825", "江苏通鼎光电科技有限公司", "基于数智驱动的轨道交通装备智能制造工厂"],
@@ -34,6 +36,7 @@
   let backgroundImage = null;
   let toastTimer = null;
   let dragSession = null;
+  let columnResizeSession = null;
 
   const iconPaths = {
     plus: '<path d="M8 2v12M2 8h12" />',
@@ -44,7 +47,10 @@
     trash: '<path d="M3 4.5h10M6 4.5V3h4v1.5M4.5 4.5l.6 9h5.8l.6-9M6.5 7v4M9.5 7v4" />',
     image: '<rect x="2" y="2" width="12" height="12" rx="1"/><circle cx="5.5" cy="5.5" r="1"/><path d="m3 12 3.5-3.5 2.2 2.2 1.6-1.6L13 12.8" />',
     type: '<path d="M3 3h10M8 3v10M5 13h6" />',
-    crosshair: '<circle cx="8" cy="8" r="4"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" />'
+    crosshair: '<circle cx="8" cy="8" r="4"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2" />',
+    alignLeft: '<path d="M2 3h9M2 6h7M2 9h9M2 12h6" />',
+    alignCenter: '<path d="M3 3h10M5 6h6M3 9h10M5 12h6" />',
+    alignRight: '<path d="M5 3h9M7 6h7M5 9h9M8 12h6" />'
   };
 
   function clone(value) {
@@ -94,6 +100,7 @@
     document.getElementById("tableSummary").textContent = `${state.headers.length} 列 · ${state.rows.length} 行`;
     document.getElementById("canvasStats").textContent = `${state.headers.length} 列 · ${state.rows.length} 行`;
     document.getElementById("backgroundName").textContent = state.backgroundName;
+    updateColumnWidthSummary();
     updatePositionControls();
   }
 
@@ -160,13 +167,16 @@
   }
 
   function renderTableEditor() {
+    const widths = getColumnWidths();
+    const gridTemplate = `44px ${widths.map((width) => `minmax(112px, ${width}fr)`).join(" ")} 30px`;
     tableEditor.innerHTML = `
       <div class="matrix-scroller">
-        <div class="matrix-grid" style="--column-count: ${state.headers.length}">
+        <div class="matrix-grid" style="grid-template-columns: ${gridTemplate}">
           <div class="matrix-corner is-header">表头</div>
           ${state.headers.map((header, columnIndex) => `
             <div class="matrix-cell is-header">
               <input type="text" value="${escapeHtml(header)}" data-cell-type="header" data-column-index="${columnIndex}" aria-label="第 ${columnIndex + 1} 列表头" />
+              ${columnIndex < state.headers.length - 1 ? `<span class="matrix-column-resizer" data-column-index="${columnIndex}" aria-hidden="true"></span>` : ""}
               <button class="cell-remove" type="button" data-action="remove-column" data-column-index="${columnIndex}" title="删除第 ${columnIndex + 1} 列" aria-label="删除第 ${columnIndex + 1} 列">
                 <span class="button-icon" data-icon="trash" aria-hidden="true">${icon("trash")}</span>
               </button>
@@ -189,6 +199,143 @@
         </div>
       </div>
     `;
+    renderColumnControls();
+    bindColumnResizers();
+  }
+
+  function normalizeColumnWidths(widths, count) {
+    const fallback = Array(count).fill(100 / Math.max(count, 1));
+    const source = Array.isArray(widths) ? widths.slice(0, count) : fallback;
+    while (source.length < count) source.push(100 / Math.max(count, 1));
+    const safe = source.map((width) => Math.max(5, Number(width) || 0));
+    const total = safe.reduce((sum, width) => sum + width, 0) || 100;
+    return safe.map((width) => (width / total) * 100);
+  }
+
+  function getColumnWidths() {
+    state.columnWidths = normalizeColumnWidths(state.columnWidths, state.headers.length);
+    return state.columnWidths;
+  }
+
+  function getColumnAlignment(columnIndex) {
+    const value = state.columnAlignments && state.columnAlignments[columnIndex];
+    return ["left", "center", "right"].includes(value) ? value : "left";
+  }
+
+  function updateColumnWidthSummary() {
+    const summary = document.getElementById("columnWidthSummary");
+    if (!summary) return;
+    const widths = getColumnWidths();
+    summary.textContent = `拖动表头边界 · 宽度总和 ${Math.round(widths.reduce((sum, width) => sum + width, 0))}%`;
+  }
+
+  function updateColumnControlNames() {
+    document.querySelectorAll(".column-control-name").forEach((nameElement, columnIndex) => {
+      const header = state.headers[columnIndex] || `列 ${columnIndex + 1}`;
+      nameElement.textContent = header;
+      nameElement.title = header;
+    });
+  }
+
+  function renderColumnControls() {
+    const controls = document.getElementById("columnControls");
+    if (!controls) return;
+    const widths = getColumnWidths();
+    controls.innerHTML = state.headers.map((header, columnIndex) => {
+      const alignment = getColumnAlignment(columnIndex);
+      return `
+        <div class="column-control-row">
+          <span class="column-control-index">${String(columnIndex + 1).padStart(2, "0")}</span>
+          <span class="column-control-name" title="${escapeHtml(header)}">${escapeHtml(header || `列 ${columnIndex + 1}`)}</span>
+          <input class="column-width-input" type="number" min="5" max="90" step="1" value="${Math.round(widths[columnIndex])}" data-column-width-index="${columnIndex}" aria-label="第 ${columnIndex + 1} 列宽度百分比" />
+          <div class="column-align-control" role="group" aria-label="第 ${columnIndex + 1} 列正文对齐方式">
+            <button class="column-align-button${alignment === "left" ? " is-active" : ""}" type="button" data-action="set-column-align" data-column-index="${columnIndex}" data-align="left" aria-label="第 ${columnIndex + 1} 列左对齐" aria-pressed="${alignment === "left"}"><span class="button-icon" data-icon="alignLeft" aria-hidden="true">${icon("alignLeft")}</span></button>
+            <button class="column-align-button${alignment === "center" ? " is-active" : ""}" type="button" data-action="set-column-align" data-column-index="${columnIndex}" data-align="center" aria-label="第 ${columnIndex + 1} 列居中" aria-pressed="${alignment === "center"}"><span class="button-icon" data-icon="alignCenter" aria-hidden="true">${icon("alignCenter")}</span></button>
+            <button class="column-align-button${alignment === "right" ? " is-active" : ""}" type="button" data-action="set-column-align" data-column-index="${columnIndex}" data-align="right" aria-label="第 ${columnIndex + 1} 列右对齐" aria-pressed="${alignment === "right"}"><span class="button-icon" data-icon="alignRight" aria-hidden="true">${icon("alignRight")}</span></button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function applyColumnWidthsToEditor(preserveInput) {
+    const grid = tableEditor.querySelector(".matrix-grid");
+    if (grid) {
+      const widths = getColumnWidths();
+      grid.style.gridTemplateColumns = `44px ${widths.map((width) => `minmax(112px, ${width}fr)`).join(" ")} 30px`;
+      tableEditor.querySelectorAll(".column-width-input").forEach((input) => {
+        if (input !== preserveInput) {
+          input.value = Math.round(widths[Number(input.dataset.columnWidthIndex)]);
+        }
+      });
+    }
+    updateColumnWidthSummary();
+  }
+
+  function setColumnWidth(columnIndex, requestedWidth) {
+    const widths = getColumnWidths();
+    if (widths.length <= 1) return;
+    const currentWidth = widths[columnIndex];
+    const nextWidth = clamp(Number(requestedWidth) || currentWidth, 5, 90);
+    const otherTotal = 100 - currentWidth;
+    const nextOtherTotal = 100 - nextWidth;
+    state.columnWidths = widths.map((width, index) => {
+      if (index === columnIndex) return nextWidth;
+      return otherTotal > 0 ? (width / otherTotal) * nextOtherTotal : nextOtherTotal / (widths.length - 1);
+    });
+    state.columnWidths = normalizeColumnWidths(state.columnWidths, state.headers.length);
+  }
+
+  function bindColumnResizers() {
+    tableEditor.querySelectorAll(".matrix-column-resizer").forEach((resizer) => {
+      resizer.addEventListener("pointerdown", beginColumnResize);
+    });
+  }
+
+  function beginColumnResize(event) {
+    if (event.button !== 0) return;
+    const columnIndex = Number(event.currentTarget.dataset.columnIndex);
+    const headers = Array.from(tableEditor.querySelectorAll(".matrix-cell.is-header"));
+    const currentCell = headers[columnIndex];
+    const nextCell = headers[columnIndex + 1];
+    if (!currentCell || !nextCell) return;
+    const totalWidth = headers.reduce((sum, cell) => sum + cell.getBoundingClientRect().width, 0);
+    columnResizeSession = {
+      pointerId: event.pointerId,
+      columnIndex,
+      startX: event.clientX,
+      startWidth: currentCell.getBoundingClientRect().width,
+      totalWidth,
+      pairWidth: currentCell.getBoundingClientRect().width + nextCell.getBoundingClientRect().width,
+      resizer: event.currentTarget
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.currentTarget.classList.add("is-dragging");
+    event.preventDefault();
+  }
+
+  function moveColumnResize(event) {
+    if (!columnResizeSession || event.pointerId !== columnResizeSession.pointerId) return;
+    const session = columnResizeSession;
+    const delta = event.clientX - session.startX;
+    const nextPixelWidth = clamp(session.startWidth + delta, 36, session.pairWidth - 36);
+    const pairPercent = ((session.pairWidth / session.totalWidth) * 100);
+    const nextPercent = (nextPixelWidth / session.totalWidth) * 100;
+    const widths = getColumnWidths().slice();
+    widths[session.columnIndex] = nextPercent;
+    widths[session.columnIndex + 1] = Math.max(5, pairPercent - nextPercent);
+    state.columnWidths = normalizeColumnWidths(widths, state.headers.length);
+    applyColumnWidthsToEditor();
+    renderPoster();
+    event.preventDefault();
+  }
+
+  function endColumnResize(event) {
+    if (!columnResizeSession || event.pointerId !== columnResizeSession.pointerId) return;
+    const resizer = columnResizeSession.resizer;
+    if (resizer.hasPointerCapture(event.pointerId)) resizer.releasePointerCapture(event.pointerId);
+    resizer.classList.remove("is-dragging");
+    columnResizeSession = null;
   }
 
   function loadBackground(src, name, resetPlacement) {
@@ -282,7 +429,12 @@
     ctx.fillStyle = options.color;
     ctx.textAlign = align;
     ctx.textBaseline = "alphabetic";
-    const textX = align === "center" ? x + width / 2 : x + padding;
+    const textX =
+      align === "center"
+        ? x + width / 2
+        : align === "right"
+          ? x + width - padding
+          : x + padding;
     lines.forEach((line, index) => {
       ctx.fillText(line, textX, firstBaseline + index * lineHeight);
     });
@@ -404,9 +556,7 @@
     const tableHeight = rowHeight * totalRows;
     const firstHeader = String(state.headers[0] || "");
     const narrowFirst = state.headers.length > 1 && /序号|编号|序列|no\.?/i.test(firstHeader);
-    const widths = narrowFirst
-      ? [0.14, ...Array(state.headers.length - 1).fill(0.86 / (state.headers.length - 1))]
-      : Array(state.headers.length).fill(1 / state.headers.length);
+    const widths = getColumnWidths().map((width) => width / 100);
     const headerFontSize = clamp(rowHeight * 0.34, 14, 28);
     const bodyFontSize = clamp(rowHeight * 0.31, 13, 26);
     const xPositions = [left];
@@ -460,7 +610,7 @@
         drawCellText(cell || "", xPositions[columnIndex], rowY, tableWidth * widths[columnIndex], rowHeight, {
           fontSize: isFirst ? bodyFontSize + 1 : bodyFontSize,
           weight: isFirst ? 700 : 500,
-          align: isFirst ? "center" : "left",
+          align: getColumnAlignment(columnIndex),
           padding: isFirst ? 8 : 20,
           color: isFirst ? state.accentColor : "#111c24"
         });
@@ -550,8 +700,24 @@
       setValue("backgroundScale", state.backgroundScale);
       setValue("backgroundScaleNumber", state.backgroundScale);
     }
-    if (target.dataset.cellType === "header") state.headers[Number(target.dataset.columnIndex)] = target.value;
+    if (target.dataset.columnWidthIndex !== undefined) {
+      setColumnWidth(Number(target.dataset.columnWidthIndex), target.value);
+      applyColumnWidthsToEditor(target);
+    }
+    if (target.dataset.cellType === "header") {
+      state.headers[Number(target.dataset.columnIndex)] = target.value;
+      updateColumnControlNames();
+    }
     if (target.dataset.cellType === "body") state.rows[Number(target.dataset.rowIndex)][Number(target.dataset.columnIndex)] = target.value;
+    updateOutputs();
+    renderPoster();
+  }
+
+  function handleChange(event) {
+    const target = event.target;
+    if (target.dataset.columnWidthIndex === undefined) return;
+    setColumnWidth(Number(target.dataset.columnWidthIndex), target.value);
+    applyColumnWidthsToEditor();
     updateOutputs();
     renderPoster();
   }
@@ -566,8 +732,12 @@
       showToast("已添加一行");
     }
     if (action === "add-column") {
+      const previousWidths = getColumnWidths().slice();
       state.headers.push(`列 ${state.headers.length + 1}`);
       state.rows.forEach((row) => row.push(""));
+      state.columnWidths = normalizeColumnWidths([...previousWidths, 100 / state.headers.length], state.headers.length);
+      state.columnAlignments = Array.isArray(state.columnAlignments) ? state.columnAlignments : [];
+      state.columnAlignments.push("left");
       renderTableEditor();
       updateOutputs();
       renderPoster();
@@ -591,8 +761,17 @@
       const columnIndex = Number(actionTarget.dataset.columnIndex);
       state.headers.splice(columnIndex, 1);
       state.rows.forEach((row) => row.splice(columnIndex, 1));
+      state.columnWidths.splice(columnIndex, 1);
+      state.columnAlignments.splice(columnIndex, 1);
+      state.columnWidths = normalizeColumnWidths(state.columnWidths, state.headers.length);
       renderTableEditor();
       updateOutputs();
+      renderPoster();
+    }
+    if (action === "set-column-align") {
+      const columnIndex = Number(actionTarget.dataset.columnIndex);
+      state.columnAlignments[columnIndex] = actionTarget.dataset.align;
+      renderColumnControls();
       renderPoster();
     }
     if (action === "select-position-target") {
@@ -670,6 +849,7 @@
   }
 
   document.addEventListener("input", handleInput);
+  document.addEventListener("change", handleChange);
   document.addEventListener("click", (event) => {
     const actionTarget = event.target.closest("[data-action]");
     if (actionTarget) handleAction(actionTarget);
@@ -687,6 +867,9 @@
   canvas.addEventListener("pointermove", moveCanvasDrag);
   canvas.addEventListener("pointerup", endCanvasDrag);
   canvas.addEventListener("pointercancel", endCanvasDrag);
+  document.addEventListener("pointermove", moveColumnResize);
+  document.addEventListener("pointerup", endColumnResize);
+  document.addEventListener("pointercancel", endColumnResize);
 
   document.querySelectorAll("[data-icon]").forEach((element) => {
     const name = element.dataset.icon;
